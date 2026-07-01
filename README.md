@@ -1,0 +1,9 @@
+📁 Zakaz_order_mis/
+├── index.html              # Вход
+├── master/
+│   ├── dashboard.html      # Дашборд мастера
+│   ├── create-order.html   # Создание заказ-наряда
+│   └── order-detail.html   # Детали (мастер)
+└── mechanic/
+    ├── dashboard.html      # Дашборд механика
+    └── order-detail.html   # Детали (механик)
