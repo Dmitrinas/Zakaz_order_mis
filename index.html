@@ -131,7 +131,7 @@
             const user = users.find(u => u.employeeId === employeeId && u.name === name && u.role === role);
             if (user) {
                 localStorage.setItem('workOrderUser', JSON.stringify(user));
-                window.location.href = (role === 'master' ? 'master/dashboard.html' : 'mechanic/dashboard.html');
+                window.location.href = (role === 'master' ? 'master_dashboard.html' : 'mechanic_dashboard.html');
             } else {
                 document.getElementById('error-message').textContent = 'Неверный табельный номер, имя или роль';
                 document.getElementById('error-message').classList.add('show');
