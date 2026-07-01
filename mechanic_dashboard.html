@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автомеханик - Дашборд</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; min-height: 100vh; }
+        .header {
+            background: white; border-bottom: 1px solid #e5e7eb; padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: #1f2937; }
+        .logo svg { width: 28px; height: 28px; color: #10b981; }
+        .user-info { display: flex; align-items: center; gap: 16px; }
+        .user-badge { padding: 6px 12px; background: #10b981; color: white; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .user-details { font-size: 14px; color: #6b7280; }
+        .logout-btn { padding: 8px 16px; background: transparent; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; color: #374151; cursor: pointer; transition: all 0.2s; }
+        .logout-btn:hover { background: #f3f4f6; }
+        .main-content { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .page-title { font-size: 28px; font-weight: 700; color: #1f2937; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .work-order-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: all 0.2s; cursor: pointer; }
+        .work-order-card:hover { box-shadow: 0 10px 40px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .card-header { padding: 20px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: flex-start; justify-content: space-between; }
+        .card-title { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
+        .card-description { font-size: 14px; color: #6b7280; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-created { background: #dbeafe; color: #1e40af; }
+        .status-in_progress { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .card-content { padding: 20px; }
+        .info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px; color: #374151; }
+        .info-row svg { width: 16px; height: 16px; color: #9ca3af; }
+        .info-row:last-child { margin-bottom: 0; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; }
+        .empty-state svg { width: 64px; height: 64px; color: #d1d5db; margin-bottom: 16px; }
+        .empty-state p { color: #9ca3af; font-size: 16px; }
+        .progress-bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #10b981; border-radius: 3px; transition: width 0.3s; }
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; }
+            .main-content { padding: 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 17h-2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1zM9 1h8a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V5a4 4 0 0 1 4-4z"/>
+                <path d="M10 5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4z"/>
+                <circle cx="15" cy="17" r="2"/><circle cx="9" cy="17" r="2"/>
+            </svg>
+            Заказ-наряд
+        </div>
+        <div class="user-info">
+            <span class="user-badge">Механик</span>
+            <span class="user-details" id="user-details"></span>
+            <button class="logout-btn" onclick="logout()">Выйти</button>
+        </div>
+    </header>
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Мои заказ-наряды</h1>
+        </div>
+        <div class="cards-grid" id="work-orders-grid"></div>
+    </main>
+    <script>
+        const mockUsers = [
+            { id: '1', name: 'Иван Иванов', role: 'master', employeeId: 'M001' },
+            { id: '2', name: 'Петр Петров', role: 'master', employeeId: 'M002' },
+            { id: '3', name: 'Алексей Сидоров', role: 'mechanic', employeeId: 'MECH001' },
+            { id: '4', name: 'Дмитрий Кузнецов', role: 'mechanic', employeeId: 'MECH002' }
+        ];
+        const user = JSON.parse(localStorage.getItem('workOrderUser'));
+        if (!user || user.role !== 'mechanic') window.location.href = '../index.html';
+        document.getElementById('user-details').textContent = `${user.name} (${user.employeeId})`;
+        let workOrders = JSON.parse(localStorage.getItem('workOrders')) || [];
+        if (workOrders.length === 0) {
+            workOrders = [
+                { id: '1', orderNumber: 'ЗН-2026-001', createdAt: '2026-06-28', carBrand: 'Toyota', carModel: 'Camry', vin: 'JT1BD22K1W0123456', licensePlate: 'А123БВ', mileage: 45000, clientName: 'Сергей Волков', masterId: '1', mechanicId: user.id, status: 'in_progress', partsSource: 'ours', workItems: [{ id: '1', name: 'Замена масла', laborHours: 1, isCompleted: false }, { id: '2', name: 'Замена тормозных колодок', laborHours: 2, isCompleted: false }] },
+                { id: '2', orderNumber: 'ЗН-2026-002', createdAt: '2026-06-29', carBrand: 'Volkswagen', carModel: 'Golf', vin: 'WVWZZZAUZBW123457', licensePlate: 'В456СД', mileage: 67000, clientName: 'Мария Петрова', masterId: '2', mechanicId: user.id, status: 'completed', partsSource: 'client', workItems: [{ id: '1', name: 'Замена воздушного фильтра', laborHours: 0.5, isCompleted: true }] }
+            ];
+        }
+        const userWorkOrders = workOrders.filter(wo => wo.mechanicId === user.id);
+        const grid = document.getElementById('work-orders-grid');
+        if (userWorkOrders.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg><p>Нет заказ-нарядов</p></div>`;
+        } else {
+            userWorkOrders.forEach(order => {
+                const masterName = mockUsers.find(u => u.id === order.masterId)?.name || 'Неизвестно';
+                const completedCount = order.workItems.filter(wi => wi.isCompleted).length;
+                const progress = Math.round((completedCount / order.workItems.length) * 100);
+                const statusClass = order.status === 'created' ? 'status-created' : order.status === 'in_progress' ? 'status-in_progress' : 'status-completed';
+                const statusText = order.status === 'created' ? 'Создан' : order.status === 'in_progress' ? 'В работе' : 'Выполнен';
+                const card = document.createElement('div');
+                card.className = 'work-order-card';
+                card.onclick = () => window.location.href = `order-detail.html?id=${order.id}`;
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div><div class="card-title">Заказ-наряд #${order.orderNumber}</div><div class="card-description">${order.carBrand} ${order.carModel} (${order.licensePlate})</div></div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Клиент: ${order.clientName}</span></div>
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h-2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1zM9 1h8a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V5a4 4 0 0 1 4-4z"/><path d="M10 5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4z"/><circle cx="15" cy="17" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>VIN: ${order.vin}</span></div>
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span>Пробег: ${order.mileage} км</span></div>
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg><span>Работ: ${order.workItems.length}</span></div>
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Мастер: ${masterName}</span></div>
+                        <div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg><span>Выполнено: ${completedCount}/${order.workItems.length}</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+        function logout() { localStorage.removeItem('workOrderUser'); window.location.href = '../index.html'; }
+    </script>
+</body>
+</html>
