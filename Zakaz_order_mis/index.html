@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электронный заказ-наряд - Вход</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+        }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .login-header p { color: #6b7280; font-size: 15px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        .error-message.show { display: block; }
+        .role-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🚗 Вход в систему</h1>
+            <p>Введите табельный номер, имя и выберите роль</p>
+        </div>
+        <div class="error-message" id="error-message"></div>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="employeeId">Табельный номер</label>
+                <input type="text" id="employeeId" placeholder="например, M001 или MECH001" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Имя</label>
+                <input type="text" id="name" placeholder="Ваше имя" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Роль</label>
+                <select id="role" class="role-select" required>
+                    <option value="" disabled selected>Выберите роль</option>
+                    <option value="master">Мастер-приемщик</option>
+                    <option value="mechanic">Автомеханик</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Войти</button>
+        </form>
+    </div>
+    <script>
+        const users = [
+            { id: '1', name: 'Иван Иванов', role: 'master', employeeId: 'M001' },
+            { id: '2', name: 'Петр Петров', role: 'master', employeeId: 'M002' },
+            { id: '3', name: 'Алексей Сидоров', role: 'mechanic', employeeId: 'MECH001' },
+            { id: '4', name: 'Дмитрий Кузнецов', role: 'mechanic', employeeId: 'MECH002' }
+        ];
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const employeeId = document.getElementById('employeeId').value;
+            const name = document.getElementById('name').value;
+            const role = document.getElementById('role').value;
+            const user = users.find(u => u.employeeId === employeeId && u.name === name && u.role === role);
+            if (user) {
+                localStorage.setItem('workOrderUser', JSON.stringify(user));
+                window.location.href = (role === 'master' ? 'master/dashboard.html' : 'mechanic/dashboard.html');
+            } else {
+                document.getElementById('error-message').textContent = 'Неверный табельный номер, имя или роль';
+                document.getElementById('error-message').classList.add('show');
+            }
+        });
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', () => document.getElementById('error-message').classList.remove('show'));
+        });
+    </script>
+</body>
+</html>
